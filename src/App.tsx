@@ -17,6 +17,7 @@ type Entries = Entry[];
 const App: React.FC = () => {
   const [src, setSrc] = useState<string | null>(null);
   const [dir, setDir] = useState<string | null>(null);
+  const [prevDir, setPrevDir] = useState<string | null>(null);
   const [player, setPlayer] = useState<JSX.Element | null>(null);
   const [entries, setEntries] = useState<Entries | null>(null);
 
@@ -56,7 +57,15 @@ const App: React.FC = () => {
           return ifElse(
             equals("dir"),
             always(
-              <li key={entry.path} onClick={() => setDir(entry.path)}>
+              <li
+                key={entry.path}
+                onClick={() =>
+                  setDir((prev) => {
+                    setPrevDir(prev);
+                    return entry.path;
+                  })
+                }
+              >
                 {entry.name}
               </li>
             ),
@@ -78,6 +87,8 @@ const App: React.FC = () => {
       src: {src ?? "(not selected)"}
       <br />
       dir: {dir ?? ""}
+      <br />
+      prevDir: {prevDir ?? ""}
       <br />
       {entryList}
     </>
