@@ -42,7 +42,10 @@ const App: React.FC = () => {
   useEffect(() => {
     void (async () => {
       try {
-        const entries = await invoke<Entries>("get_entries", { path: dir });
+        const entries = await invoke<Entries>("get_entries", {
+          path: dir,
+          sortOrder: { type: "asc" },
+        });
         setEntries(entries);
       } catch (e) {
         console.error(e);

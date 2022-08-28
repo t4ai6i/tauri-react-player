@@ -3,28 +3,20 @@ all(not(debug_assertions), target_os = "windows"),
 windows_subsystem = "windows"
 )]
 
-use std::fs;
-use serde::Serialize;
+mod entry;
 
-#[derive(Serialize)]
-#[serde(tag = "type")]
-enum Entry {
-    #[serde(rename = "file")]
-    File {
-        name: String,
-        path: String,
-    },
-    #[serde(rename = "dir")]
-    Dir {
-        name: String,
-        path: String,
-    },
-}
+use std::cmp::Ordering;
+use std::fs;
+use crate::entry::lib::{
+    compare_and_swap,
+    Entry,
+    SortOrder
+};
 
 #[tauri::command]
-fn get_entries(path: &str) -> Result<Vec<Entry>, String> {
+fn get_entries(path: &str, sort_order: SortOrder) -> Result<Vec<Entry>, String> {
     let entries = fs::read_dir(path).map_err(|e| format!("{}", e))?;
-    let res: Vec<Entry> = entries
+    let mut entries = entries
         .filter_map(|entry| -> Option<Entry> {
             let entry = entry.ok()?;
             let name = entry.file_name().to_string_lossy().to_string();
@@ -39,8 +31,20 @@ fn get_entries(path: &str) -> Result<Vec<Entry>, String> {
                 None
             }
         })
-        .collect();
-    Ok(res)
+        .collect::<Vec<Entry>>();
+
+    let swap_condition = match sort_order {
+        SortOrder::Ascending => Ordering::Greater,
+        SortOrder::Descending => Ordering::Less,
+    };
+
+    let comparator = |a: &Entry, b: &Entry| -> Ordering {
+        compare_and_swap(a, b, swap_condition)
+    };
+
+    entries.sort_by(comparator);
+
+    Ok(entries)
 }
 
 fn main() {
