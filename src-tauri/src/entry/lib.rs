@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
-use serde::{ Serialize, Deserialize };
+use std::path::Path;
+use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Clone, Debug, PartialOrd, PartialEq, Ord, Eq)]
 #[serde(tag = "type")]
@@ -14,6 +15,25 @@ pub enum Entry {
         name: String,
         path: String,
     },
+}
+
+impl Entry {
+    pub fn drop_first_dot_name(name: String, path: String) -> Option<Self> {
+        if name.starts_with(".") {
+            None
+        } else {
+            Some(Entry::Dir { name, path })
+        }
+    }
+
+    pub fn extract_video_file_only(name: String, path: String) -> Option<Self> {
+        let extension = Path::new(path.as_str()).extension()?;
+        if extension.eq("mp4") {
+            Some(Entry::File { name, path })
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Serialize, Deserialize, Copy, Clone, Debug, PartialOrd, PartialEq, Ord, Eq)]
@@ -129,5 +149,46 @@ mod tests {
             dir1.clone(),
         ];
         assert_eq!(input, expected);
+    }
+
+    #[test]
+    fn extract_video_file_only() {
+        let name = "file1.mp4";
+        let path = format!("/path/to/{}", name);
+
+        let actual = Entry::extract_video_file_only(name.to_string(), path.clone());
+        let expected = Some(Entry::File { name: name.to_string(), path: path.clone() });
+        assert_eq!(actual, expected);
+
+        let name = "file2.txt";
+        let path = format!("/path/to/{}", name);
+
+        let actual = Entry::extract_video_file_only(name.to_string(), path.clone());
+        let expected = None;
+        assert_eq!(actual, expected);
+
+        let name = ".file3";
+        let path = format!("/path/to/{}", name);
+
+        let actual = Entry::extract_video_file_only(name.to_string(), path.clone());
+        let expected = None;
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn drop_first_dot_name() {
+        let name = "dir1";
+        let path = format!("/path/to/{}", name);
+
+        let actual = Entry::drop_first_dot_name(name.to_string(), path.clone());
+        let expected = Some(Entry::Dir { name: name.to_string(), path: path.clone() });
+        assert_eq!(actual, expected);
+
+        let name = ".dir2";
+        let path = format!("/path/to/{}", name);
+
+        let actual = Entry::drop_first_dot_name(name.to_string(), path.clone());
+        let expected = None;
+        assert_eq!(actual, expected);
     }
 }

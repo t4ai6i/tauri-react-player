@@ -7,11 +7,7 @@ mod entry;
 
 use std::cmp::Ordering;
 use std::fs;
-use crate::entry::lib::{
-    compare_and_swap,
-    Entry,
-    SortOrder
-};
+use crate::entry::lib::{compare_and_swap, Entry, SortOrder};
 
 #[tauri::command]
 fn get_entries(path: &str, sort_order: SortOrder) -> Result<Vec<Entry>, String> {
@@ -24,9 +20,9 @@ fn get_entries(path: &str, sort_order: SortOrder) -> Result<Vec<Entry>, String> 
             let r#type = entry.file_type().ok()?;
 
             if r#type.is_dir() {
-                Some(Entry::Dir { name, path })
+                Entry::drop_first_dot_name(name, path)
             } else if r#type.is_file() {
-                Some(Entry::File { name, path })
+                Entry::extract_video_file_only(name, path)
             } else {
                 None
             }
