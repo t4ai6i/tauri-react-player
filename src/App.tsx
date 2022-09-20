@@ -3,16 +3,17 @@ import ReactPlayer from "react-player";
 import { homeDir } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { invoke } from "@tauri-apps/api";
-import "./App.css";
-import { always, equals, ifElse } from "ramda";
-
-interface Entry {
-  type: "dir" | "file";
-  name: string;
-  path: string;
-}
-
-type Entries = Entry[];
+import {
+  always,
+  dropLast,
+  endsWith,
+  equals,
+  ifElse,
+  isNil,
+  join,
+  split,
+} from "ramda";
+import { Entries } from "./types";
 
 const App: React.FC = () => {
   const [src, setSrc] = useState<string | null>(null);
@@ -24,7 +25,12 @@ const App: React.FC = () => {
   useEffect(() => {
     void (async () => {
       const home = await homeDir();
-      setDir(home);
+      const splitBySlash = split("/")(home);
+      const endsWithSlash = endsWith([""])(splitBySlash);
+      const pathComponents = endsWithSlash
+        ? dropLast(1)(splitBySlash)
+        : splitBySlash;
+      setDir(join("/")(pathComponents));
     })();
   }, []);
 
@@ -41,6 +47,9 @@ const App: React.FC = () => {
 
   useEffect(() => {
     void (async () => {
+      if (isNil(dir)) {
+        return;
+      }
       try {
         const entries = await invoke<Entries>("get_entries", {
           path: dir,
