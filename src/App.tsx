@@ -11,14 +11,18 @@ import {
   ifElse,
   isNil,
   join,
+  prepend,
   split,
 } from "ramda";
+import { fromNullable, getOrElse } from "fp-ts/Option";
 import { Entries } from "./types";
+import { Box } from "@mui/material";
+import Navbar from "./components/Navbar";
 
 const App: React.FC = () => {
   const [src, setSrc] = useState<string | null>(null);
   const [dir, setDir] = useState<string | null>(null);
-  const [prevDir, setPrevDir] = useState<string | null>(null);
+  const [dirHist, setDirHist] = useState<string[] | null>(null);
   const [player, setPlayer] = useState<JSX.Element | null>(null);
   const [entries, setEntries] = useState<Entries | null>(null);
 
@@ -36,7 +40,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     void (() => {
-      if (src == null) {
+      if (isNil(src)) {
         return;
       }
       const url = convertFileSrc(src);
@@ -72,8 +76,15 @@ const App: React.FC = () => {
               <li
                 key={entry.path}
                 onClick={() =>
-                  setDir((prev) => {
-                    setPrevDir(prev);
+                  setDir((prevDir) => {
+                    if (!isNil(prevDir)) {
+                      setDirHist((prevHist) => {
+                        const xs = getOrElse(() => [""])(
+                          fromNullable(prevHist)
+                        );
+                        return prepend(prevDir)(xs);
+                      });
+                    }
                     return entry.path;
                   })
                 }
@@ -92,18 +103,16 @@ const App: React.FC = () => {
     ) : null;
 
   return (
-    <>
-      <h1>React Player</h1>
+    <Box>
+      <Navbar dir={dir} />
       {player}
       <br />
       src: {src ?? "(not selected)"}
       <br />
-      dir: {dir ?? ""}
-      <br />
-      prevDir: {prevDir ?? ""}
+      prevDir: {dirHist ?? ""}
       <br />
       {entryList}
-    </>
+    </Box>
   );
 };
 
