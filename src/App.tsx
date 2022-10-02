@@ -197,7 +197,8 @@ const App: React.FC = () => {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              Dashboard
+              {/* TODO: srcがnullならそれ用のメッセージを、nonNullならそのパスを表示 */}
+              {}
             </Typography>
           </Toolbar>
         </AppBar>
@@ -218,8 +219,10 @@ const App: React.FC = () => {
           <FileExplorer
             currentDir={currentDir}
             entries={entries}
+            dirHist={dirHist}
             setCurrentDir={setCurrentDir}
             setDirHist={setDirHist}
+            setSrc={setSrc}
           />
         </Drawer>
         <Box
@@ -240,6 +243,8 @@ const App: React.FC = () => {
                 height: 240,
               }}
             >
+              {/* TODO: ビデオファイルの再生 */}
+              {/* // https://github.com/anotherhollow1125/TauriReactPlayer/blob/main/src/MainContent.tsx */}
               {"video player area"}
             </Paper>
           </Container>
