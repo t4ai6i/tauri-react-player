@@ -1,7 +1,7 @@
 import { dropRight, fromOption, match as matchA } from "fp-ts/Array";
 import { identity, pipe } from "fp-ts/function";
 import { fromNullable, match as matchO, none } from "fp-ts/Option";
-import { generateArray } from "../src/libs";
+import { generateArray } from "../src/libs/array";
 
 test("generateArray empty list with string[]", () => {
   const testData = null;

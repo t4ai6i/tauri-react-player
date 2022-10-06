@@ -3,8 +3,6 @@ import ReactPlayer from "react-player";
 import { homeDir, sep } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { invoke } from "@tauri-apps/api";
-import { dropLast, endsWith, isNil, join, split } from "ramda";
-import { Entries } from "./types";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
@@ -18,7 +16,10 @@ import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import { Entries } from "./types";
 import { FileExplorer } from "./components";
+import { normalize } from "./libs/string";
+import { fromNullable, match } from "fp-ts/es6/Option";
 
 const mdTheme = createTheme();
 
@@ -36,39 +37,43 @@ const App: React.FC = () => {
   useEffect(() => {
     void (async () => {
       const home = await homeDir();
-      const splitBySep = split(sep)(home);
-      const endsWithSep = endsWith([""])(splitBySep);
-      const pathComponents = endsWithSep ? dropLast(1)(splitBySep) : splitBySep;
-      setCurrentDir(join(sep)(pathComponents));
+      const dir = normalize(sep, home);
+      setCurrentDir(dir);
     })();
   }, []);
 
   useEffect(() => {
-    void (() => {
-      if (isNil(src)) {
-        return;
-      }
-      const url = convertFileSrc(src);
-      const player = <ReactPlayer url={url} controls={true} />;
-      setPlayer(player);
-    })();
+    void (() =>
+      match(
+        () => {
+          // do nothing
+        },
+        (src: string) => {
+          const url = convertFileSrc(src);
+          const player = <ReactPlayer url={url} controls={true} />;
+          setPlayer(player);
+        }
+      )(fromNullable(src)))();
   }, [src]);
 
   useEffect(() => {
-    void (async () => {
-      if (isNil(currentDir)) {
-        return;
-      }
-      try {
-        const entries = await invoke<Entries>("get_entries", {
-          path: currentDir,
-          sortOrder: { type: "asc" },
-        });
-        setEntries(entries);
-      } catch (e) {
-        console.error(e);
-      }
-    })();
+    void (() =>
+      match(
+        () => {
+          // do nothing
+        },
+        async (currentDir: string) => {
+          try {
+            const entries = await invoke<Entries>("get_entries", {
+              path: currentDir,
+              sortOrder: { type: "asc" },
+            });
+            setEntries(entries);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      )(fromNullable(currentDir)))();
   }, [currentDir]);
 
   const drawerWidth = 240;

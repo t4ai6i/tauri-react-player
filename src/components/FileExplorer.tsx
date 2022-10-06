@@ -16,7 +16,7 @@ import VideoFileIcon from "@mui/icons-material/VideoFile";
 import HomeIcon from "@mui/icons-material/Home";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Entries, Entry } from "../types";
-import { generateArray } from "../libs";
+import { generateArray } from "../libs/array";
 
 interface Props {
   currentDir: string | null;
