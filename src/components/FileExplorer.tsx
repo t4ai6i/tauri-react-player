@@ -1,6 +1,6 @@
 import React, { Dispatch, SetStateAction } from "react";
-import { always, equals, ifElse, isEmpty, isNil, map, prepend } from "ramda";
-import { fromNullable, getOrElse } from "fp-ts/Option";
+import { fromNullable, match as matchO } from "fp-ts/es6/Option";
+import { append, dropRight, last, map, match as matchA } from "fp-ts/es6/Array";
 import {
   List,
   ListSubheader,
@@ -10,13 +10,13 @@ import {
   ListItemText,
   Stack,
   Divider,
-  Button,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import HomeIcon from "@mui/icons-material/Home";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Entries, Entry } from "../types";
+import { generateArray } from "../libs";
 
 interface Props {
   currentDir: string | null;
@@ -35,21 +35,39 @@ const FileExplorer: React.FC<Props> = ({
   setDirHist,
   setSrc,
 }) => {
+  const backDirOnClickHandler: (
+    event: React.MouseEvent<SVGSVGElement, MouseEvent>
+  ) => void = (_event) => {
+    matchA(
+      () => {
+        // do nothing
+      },
+      (dirs: string[]) => {
+        matchO(
+          () => {
+            // do nothing
+          },
+          (lastDir: string) => {
+            setCurrentDir(lastDir);
+          }
+        )(last(dirs));
+        setDirHist(dropRight(1)(dirs));
+      }
+    )(generateArray(dirHist));
+  };
+
   const dirOnClickHandler: (
     event: React.MouseEvent<HTMLDivElement, MouseEvent>
   ) => void = (event) => {
     const path = event.currentTarget.getAttribute("data-item");
     setCurrentDir((prevDir) => {
-      if (!isNil(prevDir)) {
-        setDirHist((prevHist) => {
-          return prepend(prevDir)(
-            getOrElse(() => {
-              const ret: string[] = [];
-              return ret;
-            })(fromNullable(prevHist))
-          );
-        });
-      }
+      matchO(
+        () => {
+          // do nothing
+        },
+        (dir: string) =>
+          setDirHist((prevHist) => append(dir)(generateArray(prevHist)))
+      )(fromNullable(prevDir));
       return path;
     });
   };
@@ -67,36 +85,32 @@ const FileExplorer: React.FC<Props> = ({
       <List component="nav">
         <ListSubheader>
           <Stack direction="row" alignItems="center">
-            {ifElse(
-              isEmpty,
-              always(
+            {matchA(
+              () => (
                 <>
                   <HomeIcon sx={{ mr: 1 }} />
                   {currentDir}
                 </>
               ),
-              always(
-                <Button>
-                  {/* TODO: dirHistがNonEmptyなら一つ前に戻るイベントを実装する */}
-                  <ArrowBackIcon />
+              () => (
+                <>
+                  <ArrowBackIcon
+                    sx={{ mr: 1 }}
+                    onClick={backDirOnClickHandler}
+                  />
                   {currentDir}
-                </Button>
+                </>
               )
-            )(
-              getOrElse(() => {
-                const ret: string[] = [];
-                return ret;
-              })(fromNullable(dirHist))
-            )}
+            )(generateArray(dirHist))}
           </Stack>
         </ListSubheader>
         <Divider />
-        {!isNil(entries) ? (
-          <>
-            {map((entry: Entry) => {
-              return ifElse(
-                equals("dir"),
-                always(
+        {matchO(
+          () => <>No resources</>,
+          (entries: Entries) => (
+            <>
+              {map((entry: Entry) =>
+                entry.type === "dir" ? (
                   <ListItem key={entry.path} disablePadding>
                     <ListItemButton
                       onClick={dirOnClickHandler}
@@ -108,8 +122,7 @@ const FileExplorer: React.FC<Props> = ({
                       <ListItemText primary={entry.name} />
                     </ListItemButton>
                   </ListItem>
-                ),
-                always(
+                ) : (
                   <ListItem key={entry.path} disablePadding>
                     <ListItemButton
                       onClick={videoOnClickHandler}
@@ -122,12 +135,10 @@ const FileExplorer: React.FC<Props> = ({
                     </ListItemButton>
                   </ListItem>
                 )
-              )(entry.type);
-            })(entries)}
-          </>
-        ) : (
-          <></>
-        )}
+              )(entries)}
+            </>
+          )
+        )(fromNullable(entries))}
       </List>
     </>
   );
