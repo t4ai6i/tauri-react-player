@@ -3,18 +3,7 @@ import ReactPlayer from "react-player";
 import { homeDir, sep } from "@tauri-apps/api/path";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
 import { invoke } from "@tauri-apps/api";
-import {
-  always,
-  dropLast,
-  endsWith,
-  equals,
-  ifElse,
-  isNil,
-  join,
-  prepend,
-  split,
-} from "ramda";
-import { fromNullable, getOrElse } from "fp-ts/Option";
+import { dropLast, endsWith, isNil, join, split } from "ramda";
 import { Entries } from "./types";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -81,42 +70,6 @@ const App: React.FC = () => {
       }
     })();
   }, [currentDir]);
-
-  const entryList: JSX.Element | null =
-    entries != null ? (
-      <ul>
-        {entries.map((entry): JSX.Element => {
-          return ifElse(
-            equals("dir"),
-            always(
-              <li
-                key={entry.path}
-                onClick={() =>
-                  setCurrentDir((prevDir) => {
-                    if (!isNil(prevDir)) {
-                      setDirHist((prevHist) => {
-                        const xs = getOrElse(() => [""])(
-                          fromNullable(prevHist)
-                        );
-                        return prepend(prevDir)(xs);
-                      });
-                    }
-                    return entry.path;
-                  })
-                }
-              >
-                {entry.name}
-              </li>
-            ),
-            always(
-              <li key={entry.path} onClick={() => setSrc(entry.path)}>
-                {entry.name}
-              </li>
-            )
-          )(entry.type);
-        })}
-      </ul>
-    ) : null;
 
   const drawerWidth = 240;
 
