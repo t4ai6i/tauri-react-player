@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import ReactPlayer from "react-player";
-import { homeDir, sep } from "@tauri-apps/api/path";
+import { fromNullable, match } from "fp-ts/es6/Option";
 import { convertFileSrc } from "@tauri-apps/api/tauri";
-import { invoke } from "@tauri-apps/api";
 import { styled, createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import MuiDrawer from "@mui/material/Drawer";
@@ -16,31 +15,17 @@ import Container from "@mui/material/Container";
 import Paper from "@mui/material/Paper";
 import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import { Entries } from "./types";
 import { FileExplorer } from "./components";
-import { normalize } from "./libs/string";
-import { fromNullable, match } from "fp-ts/es6/Option";
 
 const mdTheme = createTheme();
 
 const App: React.FC = () => {
   const [src, setSrc] = useState<string | null>(null);
-  const [currentDir, setCurrentDir] = useState<string | null>(null);
-  const [dirHist, setDirHist] = useState<string[] | null>(null);
   const [player, setPlayer] = useState<JSX.Element | null>(null);
-  const [entries, setEntries] = useState<Entries | null>(null);
   const [open, setOpen] = useState<boolean>(true);
   const toggleDrawer: () => void = () => {
     setOpen(!open);
   };
-
-  useEffect(() => {
-    void (async () => {
-      const home = await homeDir();
-      const dir = normalize(sep, home);
-      setCurrentDir(dir);
-    })();
-  }, []);
 
   useEffect(() => {
     void (() =>
@@ -55,26 +40,6 @@ const App: React.FC = () => {
         }
       )(fromNullable(src)))();
   }, [src]);
-
-  useEffect(() => {
-    void (() =>
-      match(
-        () => {
-          // do nothing
-        },
-        async (currentDir: string) => {
-          try {
-            const entries = await invoke<Entries>("get_entries", {
-              path: currentDir,
-              sortOrder: { type: "asc" },
-            });
-            setEntries(entries);
-          } catch (e) {
-            console.error(e);
-          }
-        }
-      )(fromNullable(currentDir)))();
-  }, [currentDir]);
 
   const drawerWidth = 240;
 
@@ -174,14 +139,7 @@ const App: React.FC = () => {
             </IconButton>
           </Toolbar>
           <Divider />
-          <FileExplorer
-            currentDir={currentDir}
-            entries={entries}
-            dirHist={dirHist}
-            setCurrentDir={setCurrentDir}
-            setDirHist={setDirHist}
-            setSrc={setSrc}
-          />
+          <FileExplorer setSrc={setSrc} />
         </Drawer>
         <Box
           component="main"

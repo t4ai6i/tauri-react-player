@@ -1,4 +1,6 @@
-import React, { Dispatch, SetStateAction } from "react";
+import React, { useState, useEffect, Dispatch, SetStateAction } from "react";
+import { homeDir, sep } from "@tauri-apps/api/path";
+import { invoke } from "@tauri-apps/api";
 import { fromNullable, match as matchO } from "fp-ts/es6/Option";
 import { append, dropRight, last, map, match as matchA } from "fp-ts/es6/Array";
 import {
@@ -17,24 +19,45 @@ import HomeIcon from "@mui/icons-material/Home";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { Entries, Entry } from "../types";
 import { generateArray } from "../libs/array";
+import { normalize } from "../libs/string";
 
 interface Props {
-  currentDir: string | null;
-  entries: Entries | null;
-  dirHist: string[] | null;
-  setCurrentDir: Dispatch<SetStateAction<string | null>>;
-  setDirHist: Dispatch<SetStateAction<string[] | null>>;
   setSrc: Dispatch<SetStateAction<string | null>>;
 }
 
-const FileExplorer: React.FC<Props> = ({
-  currentDir,
-  entries,
-  dirHist,
-  setCurrentDir,
-  setDirHist,
-  setSrc,
-}) => {
+const FileExplorer: React.FC<Props> = ({ setSrc }) => {
+  const [currentDir, setCurrentDir] = useState<string | null>(null);
+  const [entries, setEntries] = useState<Entries | null>(null);
+  const [dirHist, setDirHist] = useState<string[] | null>(null);
+
+  useEffect(() => {
+    void (async () => {
+      const home = await homeDir();
+      const dir = normalize(sep, home);
+      setCurrentDir(dir);
+    })();
+  }, []);
+
+  useEffect(() => {
+    void (() =>
+      matchO(
+        () => {
+          // do nothing
+        },
+        async (currentDir: string) => {
+          try {
+            const entries = await invoke<Entries>("get_entries", {
+              path: currentDir,
+              sortOrder: { type: "asc" },
+            });
+            setEntries(entries);
+          } catch (e) {
+            console.error(e);
+          }
+        }
+      )(fromNullable(currentDir)))();
+  }, [currentDir]);
+
   const backDirOnClickHandler: (
     event: React.MouseEvent<SVGSVGElement, MouseEvent>
   ) => void = (_event) => {
