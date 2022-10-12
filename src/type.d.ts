@@ -1,7 +1,7 @@
-export interface Entry {
+declare interface Entry {
   type: "dir" | "file";
   name: string;
   path: string;
 }
 
-export type Entries = Entry[];
+declare type Entries = Entry[];

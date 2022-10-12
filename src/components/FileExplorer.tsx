@@ -17,7 +17,6 @@ import FolderIcon from "@mui/icons-material/Folder";
 import VideoFileIcon from "@mui/icons-material/VideoFile";
 import HomeIcon from "@mui/icons-material/Home";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
-import { Entries, Entry } from "../types";
 import { generateArray } from "../libs/array";
 import { normalize } from "../libs/string";
 
