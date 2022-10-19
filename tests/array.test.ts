@@ -6,51 +6,56 @@ import { generateArray } from "../src/libs/array";
 test("generateArray empty list with string[]", () => {
   const testData = null;
   const expected: string[] = [];
-  expect(expected).toEqual(generateArray(testData));
+  const actual = generateArray(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("generateArray empty list with number[]", () => {
   const testData = null;
   const expected: number[] = [];
-  expect(expected).toEqual(generateArray(testData));
+  const actual = generateArray(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("generateArray non empty list with string[]", () => {
   const testData = ["a"];
   const expected: string[] = ["a"];
-  expect(expected).toEqual(generateArray(testData));
+  const actual = generateArray(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("generateArray non empty list with number[]", () => {
   const testData = [0];
   const expected: number[] = [0];
-  expect(expected).toEqual(generateArray(testData));
+  const actual = generateArray(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("dropRight non empty list", () => {
   const testData: string[] = ["a", "b", "c"];
   const expected: string[] = ["a", "b"];
-  expect(expected).toEqual(dropRight(1)(testData));
+  const actual = dropRight(1)(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("dropRight empty list", () => {
   const testData: string[] = [];
   const expected: string[] = [];
-  expect(expected).toEqual(dropRight(1)(testData));
+  const actual = dropRight(1)(testData);
+  expect(actual).toEqual(expected);
 });
 
 test("match with option some", () => {
-  const expected: string[] = ["a", "b"];
-  const testData: string[] = ["a", "b", "c"];
-  const list1 = pipe(
-    fromNullable(testData),
+  const testData = pipe(
+    fromNullable(["a", "b", "c"]),
     matchO(() => pipe(none, fromOption), identity)
   );
+  const expected: string[] = ["a", "b"];
   const actual = matchA(
     () => pipe(none, fromOption),
     (xs) => {
       return dropRight(1)(xs);
     }
-  )(list1);
-  expect(expected).toEqual(actual);
+  )(testData);
+  expect(actual).toEqual(expected);
 });
