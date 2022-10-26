@@ -57,9 +57,9 @@ const FileExplorer: React.FC<Props> = ({ setSrc }) => {
       )(fromNullable(currentDir)))();
   }, [currentDir]);
 
-  const backDirOnClickHandler: (
-    event: React.MouseEvent<SVGSVGElement, MouseEvent>
-  ) => void = (_event) => {
+  const backDirOnClickHandler: React.MouseEventHandler<SVGSVGElement> = (
+    _event
+  ) => {
     matchA(
       () => {
         // do nothing
@@ -78,9 +78,9 @@ const FileExplorer: React.FC<Props> = ({ setSrc }) => {
     )(generateArray(dirHist));
   };
 
-  const dirOnClickHandler: (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => void = (event) => {
+  const dirOnClickHandler: React.MouseEventHandler<HTMLDivElement> = (
+    event
+  ) => {
     const path = event.currentTarget.getAttribute("data-item");
     setCurrentDir((prevDir) => {
       matchO(
@@ -94,9 +94,9 @@ const FileExplorer: React.FC<Props> = ({ setSrc }) => {
     });
   };
 
-  const videoOnClickHandler: (
-    event: React.MouseEvent<HTMLDivElement, MouseEvent>
-  ) => void = (event) => {
+  const videoOnClickHandler: React.MouseEventHandler<HTMLDivElement> = (
+    event
+  ) => {
     const path = event.currentTarget.getAttribute("data-item");
     console.log(path);
     // TODO: setSrcにビデオファイルのパスをセット
