@@ -22,9 +22,10 @@ import { normalize } from "../libs/string";
 
 interface Props {
   setSrc: Dispatch<SetStateAction<string | null>>;
+  setName: Dispatch<SetStateAction<string | null>>;
 }
 
-const FileExplorer: React.FC<Props> = ({ setSrc }) => {
+const FileExplorer: React.FC<Props> = ({ setSrc, setName }) => {
   const [currentDir, setCurrentDir] = useState<string | null>(null);
   const [entries, setEntries] = useState<Entries | null>(null);
   const [dirHist, setDirHist] = useState<string[] | null>(null);
@@ -98,8 +99,9 @@ const FileExplorer: React.FC<Props> = ({ setSrc }) => {
     event
   ) => {
     const path = event.currentTarget.getAttribute("data-item");
-    console.log(path);
-    // TODO: setSrcにビデオファイルのパスをセット
+    setSrc(path);
+    const name = event.currentTarget.getAttribute("data-item2");
+    setName(name);
   };
 
   return (
@@ -149,6 +151,7 @@ const FileExplorer: React.FC<Props> = ({ setSrc }) => {
                     <ListItemButton
                       onClick={videoOnClickHandler}
                       data-item={entry.path}
+                      data-item2={entry.name}
                     >
                       <ListItemIcon>
                         <VideoFileIcon />

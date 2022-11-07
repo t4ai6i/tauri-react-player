@@ -21,6 +21,7 @@ const mdTheme = createTheme();
 
 const App: React.FC = () => {
   const [src, setSrc] = useState<string | null>(null);
+  const [name, setName] = useState<string | null>(null);
   const [player, setPlayer] = useState<JSX.Element | null>(null);
   const [open, setOpen] = useState<boolean>(true);
   const toggleDrawer: () => void = () => {
@@ -94,8 +95,16 @@ const App: React.FC = () => {
               noWrap
               sx={{ flexGrow: 1 }}
             >
-              {/* TODO: srcがnullならそれ用のメッセージを、nonNullならそのパスを表示 */}
-              {}
+              <Typography variant="h6" noWrap component="div">
+                {match(
+                  () => {
+                    return "";
+                  },
+                  (src: string) => {
+                    return src;
+                  }
+                )(fromNullable(name))}
+              </Typography>
             </Typography>
           </Toolbar>
         </AppBar>
@@ -125,7 +134,7 @@ const App: React.FC = () => {
             </IconButton>
           </Toolbar>
           <Divider />
-          <FileExplorer setSrc={setSrc} />
+          <FileExplorer setSrc={setSrc} setName={setName} />
         </Drawer>
         <Box
           component="main"
